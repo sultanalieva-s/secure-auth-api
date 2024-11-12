@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  secure_auth_fastapi_app:
+    build: .
+    container_name: secure_auth_fastapi_app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
