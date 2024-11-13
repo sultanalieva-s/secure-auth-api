@@ -1,12 +1,33 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  secure_auth_fastapi_app:
+  mysql_db:
+    image: mysql:8.0  # Use MySQL 8.0 image
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: test123  # Set your MySQL root password
+      MYSQL_DATABASE: secure_auth_db          # Set default database name
+      MYSQL_USER: user                    # Set MySQL user
+      MYSQL_PASSWORD: test123       # Set MySQL password
+    ports:
+      - "3306:3306"                       # Expose MySQL on port 3306
+    volumes:
+      - db_data:/var/lib/mysql            # Persist MySQL data
+
+  api:
     build: .
-    container_name: secure_auth_fastapi_app
-    restart: unless-stopped
+    container_name: secure_auth_app
+    environment:
+      MYSQL_URL: mysql+pymysql://user:test123@mysql_db:3306/secure_auth_db
+      MYSQL_ASYNC_URL: mysql+aiomysql://user:test123@mysql_db:3306/secure_auth_db
+      MYSQL_HOST: mysql_db
+      MYSQL_PORT: 3306
+      GUNICORN_WORKERS: 2
+    depends_on:
+      - mysql_db
     ports:
       - "8000:8000"
-    env_file:
-      - .env
-    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+volumes:
+  db_data:
