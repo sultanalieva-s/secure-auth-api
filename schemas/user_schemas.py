@@ -3,7 +3,7 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
-from schemas.enums.user_enums import UserRoleEnum
+from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
 
 
 class User(BaseModel):
@@ -15,6 +15,7 @@ class User(BaseModel):
     role: Optional[UserRoleEnum] = None
     hashed_password: Optional[str] = None
     is_deleted: Optional[bool] = None
+    created_at: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -79,3 +80,24 @@ class UserPasswordResetToken(BaseModel):
         from_attributes = True
 
 
+class UserActivityStatsSchema(BaseModel):
+    id: Optional[int] = None
+    user_id: Optional[int] = None
+    activity_type: Optional[UserActivityTypeEnum]
+    action_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserUpdateIn(BaseModel):
+    first_name: str
+    last_name: str
+    phone: str
+
+
+class UserUpdateOut(BaseModel):
+    id: Optional[int] = None
+    first_name: Optional[str] = None
+    last_name: Optional[str] = None
+    phone: Optional[str] = None

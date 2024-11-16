@@ -1,12 +1,16 @@
 import logging
+from typing import List
+
+from pydantic import parse_obj_as
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session
 
 
-from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB
+from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB, UserActivityStats
+from schemas.enums.user_enums import UserActivityTypeEnum
 from schemas.user_schemas import (
-    User, UserPasswordResetToken,
+    User, UserPasswordResetToken, UserActivityStatsSchema,
 )
 from utils.exceptions import NotFoundException, AlreadyExistsException
 
@@ -31,13 +35,15 @@ class UserRepository:
             await self._session.rollback()
             await self.__integrity_error_handler(error, user)
 
-    async def update_user(self, user: User) -> User:
+    async def update_user(self, user_new_data: User, user_id: int) -> None:
         try:
             query = await self._session.execute(
                 update(UserDB)
-                .where(UserDB.id == user.id)
-                .values(**user.dict(exclude_unset=True, exclude={"id"}))
-                .returning(UserDB)
+                .where(UserDB.id == user_id)
+                .values(**user_new_data.model_dump(
+                    exclude_unset=True,
+                    exclude={"id", "hashed_password", "email", "role"},
+                ))
             )
             await self._session.commit()
             user_db = query.one()
@@ -137,3 +143,37 @@ class UserRepository:
         raise AlreadyExistsException(
             f"{error}"
         )
+
+
+class UserActivityStatsRepository:
+    def __init__(self, db_session: Session):
+        self._session = db_session
+
+    async def create(self, user_stats: UserActivityStatsSchema) -> UserActivityStatsSchema:
+        stats_db = UserActivityStats(**user_stats.model_dump(exclude={'id'}))
+        self._session.add(stats_db)
+        try:
+            await self._session.commit()
+            await self._session.refresh(stats_db)
+            return User.model_validate(stats_db)
+        except IntegrityError as error:
+            logger.error(
+                f"Error while creating User Activity Stats. Details: {error.orig.args}"
+            )
+            await self._session.rollback()
+            await self.__integrity_error_handler(error, user_stats)
+
+    async def get(self, user_id: id = None, time_range: str = None) -> List[UserActivityStatsSchema]:
+        where_args = []
+        if user_id:
+            where_args.append(UserActivityStats.user_id == user_id)
+        if time_range:
+            pass
+
+        stmt = (
+            select(UserActivityStats)
+            .where(*where_args)
+            .order_by(UserActivityStats.action_date.desc())
+        )
+        query = await self._session.execute(stmt)
+        return parse_obj_as(List[UserActivityStatsSchema], query.scalars().all())

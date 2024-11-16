@@ -32,5 +32,12 @@ services:
     - ./static:/app/static
     - ./media:/app/media
 
+  redis-secure-auth:
+    container_name: redis-secure-auth
+    image: redis:latest
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+
 volumes:
   db_data:

@@ -43,6 +43,9 @@ class Settings(BaseSettings):
     access_token_secret_key: str = "ssd"
     refresh_token_secret_key: str = "sadd"
 
+    rate_limit_requests: int = 3
+    rate_limit_seconds: int = 20
+
     # BACKEND_CORS_ORIGINS is a JSON-formatted list of origins
     # e.g: '["http://localhost", "http://localhost:4200", "http://local.dockertoolbox.tiangolo.com"]'
     backend_cors_origins: List[str] = ["*"]

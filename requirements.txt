@@ -45,3 +45,5 @@ fastapi-mail==1.4.1
 blinker==1.9.0
 aiosmtplib==2.0.2
 pytz==2024.2
+fastapi-limiter==0.1.6
+redis==5.2.0

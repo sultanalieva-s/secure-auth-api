@@ -21,9 +21,3 @@ class AuthenticationEngine:
     @staticmethod
     async def get_password_hash(password: str) -> str:
         return pwd_context.hash(password)
-
-    @staticmethod
-    async def create_random_password() -> str:
-        characters = string.ascii_letters + string.digits
-        password = "".join(random.choice(characters) for i in range(10))
-        return password

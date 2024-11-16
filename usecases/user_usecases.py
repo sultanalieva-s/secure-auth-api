@@ -1,5 +1,5 @@
 from datetime import datetime, UTC, timedelta
-from typing import Dict
+from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
@@ -9,9 +9,10 @@ from core.jwt_tokens import create_access_token, create_refresh_token
 from engines.auth_engine import AuthenticationEngine
 from engines.email_engine import EmailEngine
 from resource_access import db_session
-from resource_access.repositories.user_repos import UserRepository
-from schemas.enums.user_enums import UserRoleEnum
-from schemas.user_schemas import UserSignUp, User, UserUpdate, TokenPayload, UserPasswordResetToken
+from resource_access.repositories.user_repos import UserRepository, UserActivityStatsRepository
+from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
+from schemas.user_schemas import UserSignUp, User, UserUpdate, TokenPayload, UserPasswordResetToken, \
+    UserActivityStatsSchema
 from jose import jwt
 import secrets
 
@@ -24,6 +25,13 @@ async def signup_usecase(
     hashed_pwd = await AuthenticationEngine.get_password_hash(user_data.password)
     user_hashed.hashed_password = hashed_pwd
     user = await repo.create_user(user_hashed)
+    activity_stats_schema = UserActivityStatsSchema(
+        user_id=user.id,
+        activity_type=UserActivityTypeEnum.signup,
+        action_date=user.created_at
+    )
+    stats_repository = UserActivityStatsRepository(db_session)
+    await stats_repository.create(activity_stats_schema)
     return {
         "access_token": create_access_token(user_id=user.id),
         "refresh_token": create_refresh_token(user_id=user.id),
@@ -37,6 +45,13 @@ async def signin_usecase(
     repo = UserRepository(db_session)
     user = await repo.get_user_by_email(email)
     await AuthenticationEngine.check_password(user, password)
+    activity_stats_schema = UserActivityStatsSchema(
+        user_id=user.id,
+        activity_type=UserActivityTypeEnum.signin,
+        action_date=user.created_at
+    )
+    stats_repository = UserActivityStatsRepository(db_session)
+    await stats_repository.create(activity_stats_schema)
     return {
         "access_token": create_access_token(user_id=user.id),
         "refresh_token": create_refresh_token(user_id=user.id),
@@ -79,11 +94,32 @@ async def reset_password_usecase(db_session: Session, token: str, new_password: 
     token_from_db = await repository.get_reset_password_token(token)
     new_hashed_password = await AuthenticationEngine.get_password_hash(new_password)
     await repository.update_user_password(token_from_db.user_id,  token_from_db.token, new_hashed_password)
+    activity_stats_schema = UserActivityStatsSchema(
+        user_id=token_from_db.user_id,
+        activity_type=UserActivityTypeEnum.password_reset,
+        action_date=datetime.now(UTC)
+    )
+    stats_repository = UserActivityStatsRepository(db_session)
+    await stats_repository.create(activity_stats_schema)
 
 
-async def user_update_usecase(
-    db_session: Session, user_data: UserUpdate
-) -> Dict[str, str]:
+async def update_user_usecase(
+    db_session: Session, user_data: User, user_id: int
+) -> User:
     repo = UserRepository(db_session)
-    return repo.update_user(user_data)
+    await repo.update_user(user_data, user_id)
+    activity_stats_schema = UserActivityStatsSchema(
+        user_id=user_id,
+        activity_type=UserActivityTypeEnum.profile_update,
+        action_date=datetime.now(UTC)
+    )
+    stats_repository = UserActivityStatsRepository(db_session)
+    await stats_repository.create(activity_stats_schema)
+    return await repo.get_user_by_id(user_id)
 
+
+async def get_user_activity_logs_usecase(
+    db_session: Session, user_email: str = None
+) -> List[UserActivityStatsSchema]:
+    repo = UserActivityStatsRepository(db_session)
+    return await repo.get()
