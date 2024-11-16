@@ -26,8 +26,11 @@ services:
     depends_on:
       - mysql_db
     ports:
-      - "8000:8000"
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+      - "3000:3000"
+    volumes:
+    - ./alembic/versions:/app/alembic/versions
+    - ./static:/app/static
+    - ./media:/app/media
 
 volumes:
   db_data:

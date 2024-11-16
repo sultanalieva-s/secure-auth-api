@@ -38,3 +38,10 @@ watchfiles==0.24.0
 websockets==14.0
 cryptography==39.0.1
 gunicorn==20.1.0
+passlib==1.7.4
+jose==1.0.0
+python-jose==3.3.0
+fastapi-mail==1.4.1
+blinker==1.9.0
+aiosmtplib==2.0.2
+pytz==2024.2
