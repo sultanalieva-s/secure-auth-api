@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from core.config import settings
+from schemas.enums.user_enums import UserRoleEnum
 
 from schemas.user_schemas import TokenPayload, User
 from resource_access.db_session import AsyncSessionLocal
@@ -100,3 +101,15 @@ async def get_current_user(
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
+
+
+async def get_current_admin(
+    user: User = Depends(get_current_user),
+) -> User:
+    if user.role == UserRoleEnum.admin:
+        return user
+
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail='Permission Denied',
+    )

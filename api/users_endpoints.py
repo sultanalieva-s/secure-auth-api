@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from api.depends import get_session, get_current_user
+from api.depends import get_session, get_current_user, get_current_admin
 from core.config import settings
 from schemas.user_schemas import UserSignUp, TokenSchema, UserSignIn, RefreshTokenRequest, \
     PasswordResetRequestSchema, PasswordResetSchema, UserUpdateOut, UserUpdateIn, User, UserActivityStatsSchema, \
@@ -179,7 +179,7 @@ async def update_user(
 ):
     new_user_data = User(**user_in.dict(exclude_unset=True))
     try:
-        return await update_user_usecase(session, new_user_data, current_user.user_id)
+        return await update_user_usecase(session, new_user_data, current_user.id)
     except NotFoundException as error:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -205,6 +205,7 @@ async def update_user(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_activity(
+        current_admin: User = Depends(get_current_admin),
         skip: NonNegativeInt = 0,
         limit: NonNegativeInt = 10,
         user_email: Optional[str] = None,

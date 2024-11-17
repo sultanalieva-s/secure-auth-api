@@ -142,18 +142,18 @@ async def reset_password_usecase(db_session: Session, token: str, new_password: 
 
 
 async def update_user_usecase(
-    db_session: Session, user_data: User, user_id: int
+    db_session: Session, user_data: User, current_user_id: int
 ) -> User:
     repo = UserRepository(db_session)
-    await repo.update_user(user_data, user_id)
+    await repo.update_user(user_data, current_user_id)
     activity_stats_schema = UserActivityStatsSchema(
-        user_id=user_id,
+        user_id=current_user_id,
         activity_type=UserActivityTypeEnum.profile_update,
         action_date=datetime.now(UTC)
     )
     stats_repository = UserActivityStatsRepository(db_session)
     await stats_repository.create(activity_stats_schema)
-    return await repo.get_user_by_id(user_id)
+    return await repo.get_user_by_id(current_user_id)
 
 
 async def get_user_activity_logs_usecase(

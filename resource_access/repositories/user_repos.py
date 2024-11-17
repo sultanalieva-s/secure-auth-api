@@ -9,7 +9,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
 
 from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB, UserActivityStats, UserDeviceDB
-from schemas.enums.user_enums import UserActivityTypeEnum
 from schemas.user_schemas import (
     User, UserPasswordResetToken, UserActivityStatsSchema, UserDevice,
 )
@@ -47,14 +46,13 @@ class UserRepository:
                 ))
             )
             await self._session.commit()
-            user_db = query.one()
-            return User.model_validate(user_db)
+
         except IntegrityError as error:
             logger.error(
                 f"Error while updating User. Details: {error.orig.args}"
             )
             await self._session.rollback()
-            await self.__integrity_error_handler(error, user)
+            await self.__integrity_error_handler(error, user_new_data)
 
     async def update_user_password(self, user_id: int, token: str, new_hashed_password: str) -> None:
         try:
@@ -174,12 +172,16 @@ class UserActivityStatsRepository:
         self._session = db_session
 
     async def create(self, user_stats: UserActivityStatsSchema) -> UserActivityStatsSchema:
-        stats_db = UserActivityStats(**user_stats.model_dump(exclude={'id'}))
+        stats_db = UserActivityStats(
+            user_id=user_stats.user_id,
+            activity_type=user_stats.activity_type,
+            action_date=user_stats.action_date,
+        )
         self._session.add(stats_db)
         try:
             await self._session.commit()
             await self._session.refresh(stats_db)
-            return User.model_validate(stats_db)
+            return UserActivityStatsSchema.model_validate(stats_db)
         except IntegrityError as error:
             logger.error(
                 f"Error while creating User Activity Stats. Details: {error.orig.args}"
@@ -235,6 +237,24 @@ class UserActivityStatsRepository:
         )
         query = await self._session.execute(stmt)
         return query.scalar()
+
+    async def __integrity_error_handler(self, error, user=None) -> None:
+        if error.orig.args[0] == 1062:  # MySQL unique constraint violation
+            if "email" in error.orig.args[1]:
+                raise AlreadyExistsException(
+                    f"User with the email '{user.email}' already exists."
+                )
+            if "phone" in error.orig.args[1]:
+                raise AlreadyExistsException(
+                    f"User with the phone '{user.phone}' already exists."
+                )
+            raise AlreadyExistsException(
+                f"{error}"
+            )
+
+        raise AlreadyExistsException(
+            f"{error}"
+        )
 
 
 class UserDeviceRepository:

@@ -67,8 +67,8 @@ class UserSignInOTP(BaseModel):
 
 class TokenPayload(BaseModel):
     sub: int
-    dev: Optional[str]
-    hpt: Optional[str]
+    dev: Optional[str] = None
+    hpt: Optional[str] = None
 
 
 class RefreshTokenRequest(BaseModel):
