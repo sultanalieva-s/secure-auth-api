@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request, Response, status, HTTPException
 
 from dotenv import dotenv_values
 from fastapi_limiter import FastAPILimiter
+from prometheus_fastapi_instrumentator import Instrumentator
 
 from api.api import router
 config = dotenv_values(".env")
@@ -48,6 +49,9 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="authentication api", lifespan=lifespan)
+
+instrumentator = Instrumentator()
+instrumentator.instrument(app).expose(app)
 
 
 def ignore_handler(payload, **kw):  # kw is currently unused

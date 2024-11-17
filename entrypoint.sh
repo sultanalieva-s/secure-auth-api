@@ -17,4 +17,4 @@ alembic upgrade head
 
 # Start the application
 echo "Starting Gunicorn server"
-gunicorn main:app -w ${GUNICORN_WORKERS:-4} -k uvicorn.workers.UvicornWorker -b 0.0.0.0:3000 --access-logfile - --error-logfile - --log-level info
+gunicorn main:app -w ${GUNICORN_WORKERS:-4} -k uvicorn.workers.UvicornWorker -b 0.0.0.0:8080 --access-logfile - --error-logfile - --log-level info

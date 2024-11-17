@@ -26,7 +26,7 @@ services:
     depends_on:
       - mysql_db
     ports:
-      - "3000:3000"
+      - "8080:8080"
     volumes:
     - ./alembic/versions:/app/alembic/versions
     - ./static:/app/static
@@ -38,6 +38,19 @@ services:
     restart: unless-stopped
     ports:
       - "6379:6379"
+
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    hostname: grafana
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
 
 volumes:
   db_data:
