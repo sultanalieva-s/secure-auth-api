@@ -32,7 +32,7 @@ To run the project locally, follow these steps:
 This project uses MySQL for storing data. Some notes about migrations:
 
 1. **Migrations via Alembic** (in case IF you have new changes to db models):
-   - Enter mysql container's bash:
+   - Enter container's bash:
     ```bash
      docker exec -it <container_id> bash
     ```
@@ -44,6 +44,17 @@ This project uses MySQL for storing data. Some notes about migrations:
     ```bash
       alembic upgrade head
     ```
+
+1. **Create Admin** :
+   - Enter container's bash:
+    ```bash
+     docker exec -it <container_id> bash
+    ```
+   - Run create_admin.py script
+    ```bash
+       python3 create_admin.py 
+    ```
+
 
 ## Monitoring: Prometheus and Grafana
 
