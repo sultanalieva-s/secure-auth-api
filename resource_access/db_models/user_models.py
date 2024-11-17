@@ -69,3 +69,16 @@ class UserPasswordResetTokenDB(Base):
     def is_valid(self):
         return datetime.now(UTC) < self.expires_at.replace(tzinfo=pytz.UTC)
 
+
+class UserDeviceDB(Base):
+    __tablename__ = "user_devices"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    device_id = Column(String(200), unique=True, nullable=False)
+    created_at = Column(
+        TIMESTAMP(timezone=True),
+        server_default=func.now(),
+        nullable=False,
+    )
+

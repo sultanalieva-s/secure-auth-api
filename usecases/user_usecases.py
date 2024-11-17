@@ -9,12 +9,14 @@ from core.jwt_tokens import create_access_token, create_refresh_token
 from engines.auth_engine import AuthenticationEngine
 from engines.email_engine import EmailEngine
 from resource_access import db_session
-from resource_access.repositories.user_repos import UserRepository, UserActivityStatsRepository
+from resource_access.repositories.user_repos import UserRepository, UserActivityStatsRepository, UserDeviceRepository
 from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
 from schemas.user_schemas import UserSignUp, User, UserUpdate, TokenPayload, UserPasswordResetToken, \
-    UserActivityStatsSchema
+    UserActivityStatsSchema, UserDevice
 from jose import jwt
 import secrets
+
+from utils.exceptions import AlreadyExistsException
 
 
 async def signup_usecase(
@@ -40,7 +42,7 @@ async def signup_usecase(
 
 
 async def signin_usecase(
-    db_session: Session, email: str, password: str
+    db_session: Session, email: str, password: str, device_id: str
 ) -> Dict[str, str]:
     repo = UserRepository(db_session)
     user = await repo.get_user_by_email(email)
@@ -52,6 +54,12 @@ async def signin_usecase(
     )
     stats_repository = UserActivityStatsRepository(db_session)
     await stats_repository.create(activity_stats_schema)
+    device_repo = UserDeviceRepository(db_session)
+    device_schema = UserDevice(user_id=user.id, device_id=device_id)
+    if not await device_repo.does_user_device_exist(user.id, device_id):
+        print('\n\n\n HERE \n\n\n')
+        await device_repo.create_user_device(device_schema)
+        await EmailEngine.send_new_device_email(email='saadatssu@gmail.com', device_id=device_id)
     return {
         "access_token": create_access_token(user_id=user.id),
         "refresh_token": create_refresh_token(user_id=user.id),

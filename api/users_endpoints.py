@@ -61,6 +61,7 @@ async def signin(
             db_session,
             email=signin_data.email,
             password=signin_data.password,
+            device_id=signin_data.device_id
         )
     except NotFoundException as e:
         return JSONResponse(

@@ -45,6 +45,7 @@ class TokenSchema(BaseModel):
 class UserSignIn(BaseModel):
     email: EmailStr
     password: str
+    device_id: str
 
 
 class TokenPayload(BaseModel):
@@ -101,3 +102,14 @@ class UserUpdateOut(BaseModel):
     first_name: Optional[str] = None
     last_name: Optional[str] = None
     phone: Optional[str] = None
+
+
+class UserDevice(BaseModel):
+    id: Optional[int] = None
+    user_id: Optional[int] = None
+    device_id: Optional[str] = None
+    created_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+

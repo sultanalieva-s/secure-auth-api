@@ -3,14 +3,14 @@ from typing import List
 
 from pydantic import parse_obj_as
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, update
+from sqlalchemy import select, update, exists
 from sqlalchemy.orm import Session
 
 
-from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB, UserActivityStats
+from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB, UserActivityStats, UserDeviceDB
 from schemas.enums.user_enums import UserActivityTypeEnum
 from schemas.user_schemas import (
-    User, UserPasswordResetToken, UserActivityStatsSchema,
+    User, UserPasswordResetToken, UserActivityStatsSchema, UserDevice,
 )
 from utils.exceptions import NotFoundException, AlreadyExistsException
 
@@ -177,3 +177,49 @@ class UserActivityStatsRepository:
         )
         query = await self._session.execute(stmt)
         return parse_obj_as(List[UserActivityStatsSchema], query.scalars().all())
+
+
+class UserDeviceRepository:
+    def __init__(self, db_session: Session):
+        self._session = db_session
+
+    async def create_user_device(self, device: UserDevice) -> UserDevice:
+        device_db = UserDeviceDB(**device.model_dump(exclude={'id'}))
+        self._session.add(device_db)
+        try:
+            await self._session.commit()
+            await self._session.refresh(device_db)
+            return UserDevice.model_validate(device_db)
+        except IntegrityError as error:
+            logger.error(
+                f"Error while creating User Device. Details: {error.orig.args}"
+            )
+            await self._session.rollback()
+            await self.__integrity_error_handler(error, device)
+
+    async def does_user_device_exist(self, user_id: int, device_id: str) -> bool:
+        stmt = select(
+            exists(
+                select(UserDeviceDB).where(
+                    UserDeviceDB.is_deleted.is_(False),
+                    UserDeviceDB.user_id == user_id,
+                    UserDeviceDB.device_id == device_id
+                )
+            )
+        )
+        query = await self._session.execute(stmt)
+        return query.scalar()
+
+    async def __integrity_error_handler(self, error, user=None) -> None:
+        if error.orig.args[0] == 1062:  # MySQL unique constraint violation
+            if "device_id" in error.orig.args[1]:
+                raise AlreadyExistsException(
+                    f"UserDevice already exists."
+                )
+            raise AlreadyExistsException(
+                f"{error}"
+            )
+
+        raise AlreadyExistsException(
+            f"{error}"
+        )
