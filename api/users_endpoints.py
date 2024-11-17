@@ -8,9 +8,11 @@ from starlette.responses import JSONResponse
 from api.depends import get_session, get_current_user
 from core.config import settings
 from schemas.user_schemas import UserSignUp, TokenSchema, UserSignIn, RefreshTokenRequest, \
-    PasswordResetRequestSchema, PasswordResetSchema, UserUpdateOut, UserUpdateIn, User, UserActivityStatsSchema
+    PasswordResetRequestSchema, PasswordResetSchema, UserUpdateOut, UserUpdateIn, User, UserActivityStatsSchema, \
+    UserSignInOTP
 from usecases.user_usecases import signup_usecase, signin_usecase, refresh_tokens_usecase, \
-    request_password_reset_usecase, reset_password_usecase, update_user_usecase, get_user_activity_logs_usecase
+    request_password_reset_usecase, reset_password_usecase, update_user_usecase, get_user_activity_logs_usecase, \
+    verify_otp_usecase
 from utils.exceptions import NotFoundException, AuthenticationError, AlreadyExistsException
 from jose import JWTError
 
@@ -57,11 +59,41 @@ async def signin(
         _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
 ):
     try:
-        return await signin_usecase(
+        await signin_usecase(
             db_session,
             email=signin_data.email,
             password=signin_data.password,
             device_id=signin_data.device_id
+        )
+        return JSONResponse(content={"message": "OTP sent to your email"}, status_code=status.HTTP_200_OK)
+    except NotFoundException as e:
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"message": e.message, "error_code": e.error_code},
+        )
+    except AuthenticationError as e:
+        return JSONResponse(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            content={"message": e.message, "error_code": e.error_code},
+        )
+
+
+@router.post(
+    '/verify-otp/',
+    status_code=status.HTTP_200_OK,
+    description='Verify User OTP and generate tokens',
+    response_model=TokenSchema,
+)
+async def verify_otp(
+        otp_data: UserSignInOTP,
+        db_session: Session = Depends(get_session),
+        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+):
+    try:
+        return await verify_otp_usecase(
+            db_session,
+            email=otp_data.email,
+            otp=otp_data.otp
         )
     except NotFoundException as e:
         return JSONResponse(

@@ -31,6 +31,11 @@ class UserDB(Base):
         onupdate=func.now(),
         nullable=False,
     )
+    login_otp = Column(String(100), nullable=True)
+    login_otp_created_at = Column(
+        TIMESTAMP(timezone=True),
+        nullable=True,
+    )
     password_reset_tokens = relationship(
         'UserPasswordResetTokenDB',
         back_populates='user',

@@ -15,6 +15,8 @@ class User(BaseModel):
     role: Optional[UserRoleEnum] = None
     hashed_password: Optional[str] = None
     is_deleted: Optional[bool] = None
+    login_otp: Optional[str] = None
+    login_otp_created_at: Optional[datetime] = None
     created_at: Optional[datetime] = None
 
     class Config:
@@ -46,6 +48,11 @@ class UserSignIn(BaseModel):
     email: EmailStr
     password: str
     device_id: str
+
+
+class UserSignInOTP(BaseModel):
+    email: EmailStr
+    otp: str
 
 
 class TokenPayload(BaseModel):

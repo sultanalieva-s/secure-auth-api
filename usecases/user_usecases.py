@@ -1,6 +1,9 @@
+import time
+import uuid
 from datetime import datetime, UTC, timedelta
 from typing import Dict, List
 
+import pytz
 from sqlalchemy.orm import Session
 
 from core import jwt_tokens
@@ -16,7 +19,9 @@ from schemas.user_schemas import UserSignUp, User, UserUpdate, TokenPayload, Use
 from jose import jwt
 import secrets
 
-from utils.exceptions import AlreadyExistsException
+from utils.exceptions import AlreadyExistsException, AuthenticationError
+
+OTP_EXPIRATION_TIME = 60 * 5  # OTP validity in seconds
 
 
 async def signup_usecase(
@@ -42,11 +47,19 @@ async def signup_usecase(
 
 
 async def signin_usecase(
-    db_session: Session, email: str, password: str, device_id: str
-) -> Dict[str, str]:
+        db_session: Session,
+        email: str,
+        password: str,
+        device_id: str
+) -> None:
     repo = UserRepository(db_session)
     user = await repo.get_user_by_email(email)
     await AuthenticationEngine.check_password(user, password)
+
+    otp = str(uuid.uuid4())[:6]
+    await repo.set_user_login_otp(user.id, otp, datetime.now(UTC))
+    await EmailEngine.send_login_otp_email(user.email, otp)
+
     activity_stats_schema = UserActivityStatsSchema(
         user_id=user.id,
         activity_type=UserActivityTypeEnum.signin,
@@ -54,12 +67,29 @@ async def signin_usecase(
     )
     stats_repository = UserActivityStatsRepository(db_session)
     await stats_repository.create(activity_stats_schema)
+
     device_repo = UserDeviceRepository(db_session)
     device_schema = UserDevice(user_id=user.id, device_id=device_id)
     if not await device_repo.does_user_device_exist(user.id, device_id):
-        print('\n\n\n HERE \n\n\n')
         await device_repo.create_user_device(device_schema)
-        await EmailEngine.send_new_device_email(email='saadatssu@gmail.com', device_id=device_id)
+        await EmailEngine.send_new_device_email(email=email, device_id=device_id)
+
+
+async def verify_otp_usecase(
+        db_session: Session,
+        email: str,
+        otp: str,
+) -> Dict[str, str]:
+    repo = UserRepository(db_session)
+    user = await repo.get_user_by_email(email)
+
+    if user.login_otp != otp:
+        raise AuthenticationError("Provided OTP is wrong.")
+
+    if (datetime.now(UTC) - user.login_otp_created_at.replace(tzinfo=pytz.UTC)).total_seconds() > OTP_EXPIRATION_TIME:
+        raise AuthenticationError("Your OTP has expired.")
+
+    await repo.set_user_login_otp(user.id, None, None)
     return {
         "access_token": create_access_token(user_id=user.id),
         "refresh_token": create_refresh_token(user_id=user.id),

@@ -1,5 +1,6 @@
 import logging
-from typing import List
+from datetime import datetime
+from typing import List, Optional
 
 from pydantic import parse_obj_as
 from sqlalchemy.exc import IntegrityError
@@ -71,6 +72,29 @@ class UserRepository:
         except IntegrityError as error:
             logger.error(
                 f"Error while updating User. Details: {error.orig.args}"
+            )
+            await self._session.rollback()
+            await self.__integrity_error_handler(error)
+
+    async def set_user_login_otp(
+            self,
+            user_id: int,
+            otp: Optional[str] = None,
+            otp_created_at: Optional[datetime] = None
+    ) -> None:
+        try:
+            await self._session.execute(
+                update(UserDB)
+                .where(UserDB.id == user_id)
+                .values(
+                    login_otp=otp,
+                    login_otp_created_at=otp_created_at
+                )
+            )
+            await self._session.commit()
+        except IntegrityError as error:
+            logger.error(
+                f"Error while updating User Login OTP. Details: {error.orig.args}"
             )
             await self._session.rollback()
             await self.__integrity_error_handler(error)

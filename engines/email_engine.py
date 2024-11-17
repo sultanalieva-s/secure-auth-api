@@ -25,7 +25,7 @@ class EmailEngine:
         await fm.send_message(message)
 
     @staticmethod
-    async def send_new_device_email(email: str, device_id: str):
+    async def send_new_device_email(email: str, device_id: str) -> None:
         config = ConnectionConfig(
             MAIL_USERNAME="info.neomarketplace@gmail.com",
             MAIL_PASSWORD="savt gkkk tjkk yuee",
@@ -47,6 +47,34 @@ class EmailEngine:
         """
         message = MessageSchema(
             subject="Sirius.expert: A login from a new device",
+            recipients=[email],
+            body=body,
+            subtype=MessageType.html,
+        )
+        fm = FastMail(config)
+        await fm.send_message(message)
+
+    @staticmethod
+    async def send_login_otp_email(email: str, otp: str) -> None:
+        config = ConnectionConfig(
+            MAIL_USERNAME="info.neomarketplace@gmail.com",
+            MAIL_PASSWORD="savt gkkk tjkk yuee",
+            MAIL_FROM="info.neomarketplace@gmail.com",
+            MAIL_SERVER='smtp.gmail.com',
+            MAIL_PORT=465,
+            MAIL_SSL_TLS=True,
+            MAIL_STARTTLS=False,
+        )
+        body = f"""
+        <p>Hello,</p>
+        <p>Your one-time passcode (OTP) for logging into your Sirius.expert account is:</p>
+        <p><strong>{otp}</strong></p>
+        <p>Enter this code in the app to complete your login. This code is valid for a limited time and can only be used once.</p>
+        <p>If you did not request this code, you can safely ignore this email.</p>
+        <p>Thank you,<br>The Sirius.expert Team</p>
+        """
+        message = MessageSchema(
+            subject="Sirius.expert: OTP",
             recipients=[email],
             body=body,
             subtype=MessageType.html,
