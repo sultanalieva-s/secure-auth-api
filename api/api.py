@@ -5,12 +5,6 @@ router = APIRouter()
 
 
 router.include_router(
-    example_router.router,
-    prefix="/example",
-    tags=["Example"],
-)
-
-router.include_router(
     user_router.router,
     prefix='/users',
     tags=["Users"],

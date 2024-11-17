@@ -1,7 +1,7 @@
 import time
 import uuid
 from datetime import datetime, UTC, timedelta
-from typing import Dict, List
+from typing import Dict, List, Tuple
 
 import pytz
 from sqlalchemy.orm import Session
@@ -19,7 +19,7 @@ from schemas.user_schemas import UserSignUp, User, UserUpdate, TokenPayload, Use
 from jose import jwt
 import secrets
 
-from utils.exceptions import AlreadyExistsException, AuthenticationError
+from utils.exceptions import AlreadyExistsException, AuthenticationError, NotFoundException
 
 OTP_EXPIRATION_TIME = 60 * 5  # OTP validity in seconds
 
@@ -157,7 +157,14 @@ async def update_user_usecase(
 
 
 async def get_user_activity_logs_usecase(
-    db_session: Session, user_email: str = None
-) -> List[UserActivityStatsSchema]:
+        *,
+        db_session: Session,
+        user_email: str = None,
+        skip: int = 0,
+        limit: int = 10,
+        time_range: str = None,
+) -> Tuple[int, List[UserActivityStatsSchema]]:
     repo = UserActivityStatsRepository(db_session)
-    return await repo.get()
+    count = await repo.get_count(user_email=user_email)
+    logs = await repo.get(user_email=user_email, skip=skip, limit=limit)
+    return count, logs

@@ -48,7 +48,7 @@ async def lifespan(_: FastAPI):
     await FastAPILimiter.close()
 
 
-app = FastAPI(title="authentication api", lifespan=lifespan)
+app = FastAPI(title="Secure Authentication Api", lifespan=lifespan)
 
 instrumentator = Instrumentator()
 instrumentator.instrument(app).expose(app)

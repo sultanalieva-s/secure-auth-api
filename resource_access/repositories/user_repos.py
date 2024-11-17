@@ -4,9 +4,9 @@ from typing import List, Optional
 
 from pydantic import parse_obj_as
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select, update, exists
+from sqlalchemy import select, update, exists, and_
 from sqlalchemy.orm import Session
-
+from sqlalchemy.sql.functions import count
 
 from resource_access.db_models.user_models import UserDB, UserPasswordResetTokenDB, UserActivityStats, UserDeviceDB
 from schemas.enums.user_enums import UserActivityTypeEnum
@@ -187,20 +187,54 @@ class UserActivityStatsRepository:
             await self._session.rollback()
             await self.__integrity_error_handler(error, user_stats)
 
-    async def get(self, user_id: id = None, time_range: str = None) -> List[UserActivityStatsSchema]:
+    async def get(
+            self,
+            *,
+            user_email: Optional[str] = None,
+            time_range: str = None,
+            skip: int = 0,
+            limit: int = 10,
+    ) -> List[UserActivityStatsSchema]:
         where_args = []
-        if user_id:
-            where_args.append(UserActivityStats.user_id == user_id)
+        if user_email:
+            where_args.append(UserDB.email == user_email)
         if time_range:
             pass
 
         stmt = (
             select(UserActivityStats)
+            .join(
+                UserDB,
+                and_(
+                    UserDB.id == UserActivityStats.user_id,
+                ),
+            )
             .where(*where_args)
+            .limit(limit)
+            .offset(skip)
             .order_by(UserActivityStats.action_date.desc())
         )
         query = await self._session.execute(stmt)
         return parse_obj_as(List[UserActivityStatsSchema], query.scalars().all())
+
+    async def get_count(self, user_email: Optional[str] = None, time_range: Optional[str] = None) -> int:
+        where_args = []
+        if user_email:
+            where_args.append(UserDB.email == user_email)
+        if time_range:
+            pass
+        stmt = (
+            select(count(UserActivityStats.id))
+            .join(
+                UserDB,
+                and_(
+                    UserDB.id == UserActivityStats.user_id,
+                ),
+            )
+            .where(*where_args)
+        )
+        query = await self._session.execute(stmt)
+        return query.scalar()
 
 
 class UserDeviceRepository:

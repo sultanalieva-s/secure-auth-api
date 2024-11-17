@@ -42,6 +42,12 @@ class UserDB(Base):
         lazy='selectin',
         uselist=True,
     )
+    activity_logs = relationship(
+        "UserActivityStats",
+        back_populates="user",
+        lazy='selectin',
+        uselist=True
+    )
 
 
 class UserActivityStats(Base):
@@ -59,6 +65,11 @@ class UserActivityStats(Base):
         TIMESTAMP(timezone=True),
         server_default=func.now(),
         nullable=False,
+    )
+    user = relationship(
+        "UserDB",
+        back_populates="activity_logs",
+        lazy = "selectin"
     )
 
 

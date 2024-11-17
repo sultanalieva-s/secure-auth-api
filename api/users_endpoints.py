@@ -1,5 +1,5 @@
-from typing import List
-
+from typing import List, Optional
+from pydantic import NonNegativeInt
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from starlette import status
@@ -9,12 +9,14 @@ from api.depends import get_session, get_current_user
 from core.config import settings
 from schemas.user_schemas import UserSignUp, TokenSchema, UserSignIn, RefreshTokenRequest, \
     PasswordResetRequestSchema, PasswordResetSchema, UserUpdateOut, UserUpdateIn, User, UserActivityStatsSchema, \
-    UserSignInOTP
+    UserSignInOTP, UserActivityStatsPaginated
 from usecases.user_usecases import signup_usecase, signin_usecase, refresh_tokens_usecase, \
     request_password_reset_usecase, reset_password_usecase, update_user_usecase, get_user_activity_logs_usecase, \
     verify_otp_usecase
 from utils.exceptions import NotFoundException, AuthenticationError, AlreadyExistsException
 from jose import JWTError
+
+from utils.pagination import paginate
 
 router = APIRouter()
 
@@ -25,7 +27,7 @@ RATE_LIMIT_DEFAULT_SECONDS = settings.rate_limit_seconds
 
 
 @router.post(
-    '/signup/',
+    '/auth/signup/',
     status_code=status.HTTP_200_OK,
     description='User Registration',
     response_model=TokenSchema,
@@ -48,7 +50,7 @@ async def user_signup(
 
 
 @router.post(
-    '/signin/',
+    '/auth/signin/',
     status_code=status.HTTP_200_OK,
     description='User Signin',
     response_model=TokenSchema,
@@ -79,7 +81,7 @@ async def signin(
 
 
 @router.post(
-    '/verify-otp/',
+    '/auth/verify-otp/',
     status_code=status.HTTP_200_OK,
     description='Verify User OTP and generate tokens',
     response_model=TokenSchema,
@@ -108,7 +110,7 @@ async def verify_otp(
 
 
 @router.post(
-    "/refresh-tokens",
+    "/auth/refresh-tokens",
     response_model=TokenSchema
 )
 async def refresh_tokens(
@@ -131,7 +133,7 @@ async def refresh_tokens(
         )
 
 
-@router.post("/password-reset/request")
+@router.post("/auth/password-reset/request")
 async def request_password_reset(
         data: PasswordResetRequestSchema,
         db_session: Session = Depends(get_session),
@@ -147,7 +149,7 @@ async def request_password_reset(
         )
 
 
-@router.post("/password-reset/confirm")
+@router.post("/auth/password-reset/confirm")
 async def reset_password(
         data: PasswordResetSchema,
         db_session: Session = Depends(get_session),
@@ -164,7 +166,7 @@ async def reset_password(
 
 
 @router.put(
-    "/",
+    "/profile/",
     description="Update User",
     response_model=UserUpdateOut,
     status_code=status.HTTP_200_OK,
@@ -197,13 +199,22 @@ async def update_user(
 
 
 @router.get(
-    "/user-activity/",
+    "/crm/user-activity/",
     description="Get User Activity Logs",
-    response_model=List[UserActivityStatsSchema],
+    response_model=UserActivityStatsPaginated,
     status_code=status.HTTP_200_OK,
 )
 async def get_user_activity(
+        skip: NonNegativeInt = 0,
+        limit: NonNegativeInt = 10,
+        user_email: Optional[str] = None,
         session: Session = Depends(get_session),
         _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
 ):
-    return await get_user_activity_logs_usecase(session)
+    count, logs = await get_user_activity_logs_usecase(
+        db_session=session,
+        user_email=user_email,
+        skip=skip,
+        limit=limit,
+    )
+    return paginate(count=count, items=logs)

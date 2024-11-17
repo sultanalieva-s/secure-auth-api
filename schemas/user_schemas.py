@@ -4,6 +4,7 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
 from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
+from schemas.pagination_schemas import PaginatedResponse
 
 
 class User(BaseModel):
@@ -36,6 +37,15 @@ class UserUpdate(BaseModel):
     last_name: Optional[str]
     email: Optional[EmailStr]
     phone_number: Optional[str]
+
+
+class UserShort(BaseModel):
+    first_name: str
+    last_name: str
+    email: EmailStr
+
+    class Config:
+        from_attributes = True
 
 
 class TokenSchema(BaseModel):
@@ -93,6 +103,7 @@ class UserActivityStatsSchema(BaseModel):
     user_id: Optional[int] = None
     activity_type: Optional[UserActivityTypeEnum]
     action_date: Optional[datetime] = None
+    user: Optional[UserShort] = None
 
     class Config:
         from_attributes = True
@@ -120,3 +131,16 @@ class UserDevice(BaseModel):
     class Config:
         from_attributes = True
 
+
+class UserActivityStatsOut(BaseModel):
+    user_id: Optional[int] = None
+    activity_type: Optional[UserActivityTypeEnum]
+    action_date: Optional[datetime] = None
+    user: Optional[UserShort] = None
+
+    class Config:
+        from_attributes = True
+
+
+class UserActivityStatsPaginated(PaginatedResponse):
+    items: List[UserActivityStatsOut]
