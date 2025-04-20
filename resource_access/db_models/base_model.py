@@ -5,7 +5,6 @@ from sqlalchemy.sql import expression
 
 class Base:
 
-    # Generate id automatically
     id = Column(Integer, primary_key=True, index=True)
     is_deleted = Column(
         Boolean, default=False, server_default=expression.false()

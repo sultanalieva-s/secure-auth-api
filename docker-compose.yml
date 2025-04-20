@@ -2,17 +2,17 @@ version: "3.8"
 
 services:
   mysql_db:
-    image: mysql:8.0  # Use MySQL 8.0 image
+    image: mysql:8.0
     container_name: mysql_db
     environment:
-      MYSQL_ROOT_PASSWORD: test123  # Set your MySQL root password
-      MYSQL_DATABASE: secure_auth_db          # Set default database name
-      MYSQL_USER: user                    # Set MySQL user
-      MYSQL_PASSWORD: test123       # Set MySQL password
+      MYSQL_ROOT_PASSWORD: test123
+      MYSQL_DATABASE: secure_auth_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: test123
     ports:
-      - "3306:3306"                       # Expose MySQL on port 3306
+      - "3306:3306"
     volumes:
-      - db_data:/var/lib/mysql            # Persist MySQL data
+      - db_data:/var/lib/mysql
 
   api:
     build: .

@@ -21,7 +21,7 @@ import secrets
 
 from utils.exceptions import AlreadyExistsException, AuthenticationError, NotFoundException
 
-OTP_EXPIRATION_TIME = 60 * 5  # OTP validity in seconds
+OTP_EXPIRATION_TIME = 60 * 5
 
 
 async def signup_usecase(
