@@ -1,4 +1,4 @@
-# Sirius.expert Test Assignment: Secure Authentication Api
+# Secure Authentication Api
 
 FastApi App that implements User Authentication, 2FA, role based access, user activity logs,
 monitoring via Prometheus and Grafana, containerization via docker-compose, and CRUD operations via SQLAlchemy
