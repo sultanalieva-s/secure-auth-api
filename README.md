@@ -1,7 +1,11 @@
 # Secure Authentication Api
+# Features: 
 
-FastApi App that implements User Authentication, 2FA, role based access, user activity logs,
-monitoring via Prometheus and Grafana, containerization via docker-compose, and CRUD operations via SQLAlchemy
+User Authentication  
+2FA  
+Role based access  
+User activity logs  
+Monitoring via Prometheus and Grafana  
 
 ## Local Setup
 
