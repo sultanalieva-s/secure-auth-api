@@ -25,32 +25,22 @@ To run the project locally, follow these steps:
    docker compose build
    docker compose up
    ```
-   
-3. **Access the application**:
 
-   Open your browser and visit `http://127.0.0.1:8080/` to see the app running locally.  
-   Swagger is available at `http://127.0.0.1:8080/docs/`.
-   
-
-## Database
-
-This project uses MySQL for storing data. Some notes about migrations:
-
-1. **Migrations via Alembic** (in case IF you have new changes to db models):
-   - Enter container's bash:
+## Database Migrations
+   - Enter container's bash:  
     ```bash
      docker exec -it <container_id> bash
     ```
-   - Generate migration
+   - Generate migration  
     ```bash
        alembic revision --autogenerate -m 'MIGRATION DESCRIPTION'
     ```
-   - Generate migration
+   - Generate migration  
     ```bash
       alembic upgrade head
     ```
 
-1. **Create Admin** :
+1. **Creating Admin** :
    - Enter container's bash:
     ```bash
      docker exec -it <container_id> bash
@@ -59,13 +49,3 @@ This project uses MySQL for storing data. Some notes about migrations:
     ```bash
        python3 create_admin.py 
     ```
-
-
-## Monitoring: Prometheus and Grafana
-
-The project includes monitoring tools to keep track of errors, performance, and health of the application. Follow the setup instructions below:
-
-1. **Prometheus and Grafana**:
-
-     1. Prometheus is available at http://localhost:9090/ .
-     2. Grafana is available at http://localhost:3000/. Use credentials: admin admin
