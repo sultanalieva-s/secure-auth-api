@@ -6,6 +6,7 @@ User Authentication
 Role based access  
 User activity logs  
 Monitoring via Prometheus and Grafana  
+Rate limiting
 
 ## Local Setup
 
