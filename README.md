@@ -1,4 +1,4 @@
-# Secure Authentication Api
+# Secure Authentication API
 # Features: 
 
 User Authentication  
