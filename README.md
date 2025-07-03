@@ -40,12 +40,12 @@ To run the project locally, follow these steps:
       alembic upgrade head
     ```
 
-1. **Creating Admin** :
-   - Enter container's bash:
+## Creating Admin:  
+   - Enter container's bash:  
     ```bash
      docker exec -it <container_id> bash
     ```
-   - Run create_admin.py script
+   - Run create_admin.py script  
     ```bash
        python3 create_admin.py 
     ```
