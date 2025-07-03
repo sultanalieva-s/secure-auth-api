@@ -10,7 +10,7 @@ from core import jwt_tokens
 from core.config import settings
 from core.jwt_tokens import create_access_token, create_refresh_token
 from engines.auth_engine import AuthenticationEngine
-from engines.email_engine import EmailEngine
+from engines.email_engine import EmailService
 from resource_access import db_session
 from resource_access.repositories.user_repos import UserRepository, UserActivityStatsRepository, UserDeviceRepository
 from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
@@ -58,7 +58,7 @@ async def signin_usecase(
 
     otp = str(uuid.uuid4())[:6]
     await repo.set_user_login_otp(user.id, otp, datetime.now(UTC))
-    await EmailEngine.send_login_otp_email(user.email, otp)
+    await EmailService.send_login_otp_email(user.email, otp)
 
     activity_stats_schema = UserActivityStatsSchema(
         user_id=user.id,
@@ -72,7 +72,7 @@ async def signin_usecase(
     device_schema = UserDevice(user_id=user.id, device_id=device_id)
     if not await device_repo.does_user_device_exist(user.id, device_id):
         await device_repo.create_user_device(device_schema)
-        await EmailEngine.send_new_device_email(email=email, device_id=device_id)
+        await EmailService.send_new_device_email(email=email, device_id=device_id)
 
 
 async def verify_otp_usecase(
@@ -124,7 +124,7 @@ async def request_password_reset_usecase(db_session: Session, user_email: str):
         expires_at=expires_at
     )
     await repository.create_password_reset_token(token)
-    await EmailEngine.send_reset_password_email(user_email, token.token)
+    await EmailService.send_reset_password_email(user_email, token.token)
 
 
 async def reset_password_usecase(db_session: Session, token: str, new_password: str) -> None:

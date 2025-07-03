@@ -17,8 +17,8 @@ To run the project locally, follow these steps:
 2. **Build and run docker containers**:
 
    ```bash
-   docker-compose build
-   docker-compose up
+   docker compose build
+   docker compose up
    ```
    
 3. **Access the application**:

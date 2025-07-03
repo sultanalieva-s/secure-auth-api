@@ -1,12 +1,9 @@
 from core.config import settings
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
-
-class EmailEngine:
-    @staticmethod
-    async def send_reset_password_email(email: str, token: str):
-        reset_link = f"{settings.frontend_domain_name}/password-reset?token={token}"
-        config = ConnectionConfig(
+class EmailProvider:
+    def __init__(self):
+        self.config = ConnectionConfig(
             MAIL_USERNAME="info.neomarketplace@gmail.com",
             MAIL_PASSWORD="savt gkkk tjkk yuee",
             MAIL_FROM="info.neomarketplace@gmail.com",
@@ -15,27 +12,27 @@ class EmailEngine:
             MAIL_SSL_TLS=True,
             MAIL_STARTTLS=False,
         )
+
+    def get_provider(self):
+        return FastMail(self.config)
+
+
+
+class EmailService:
+    def __init__(self, email_provider):
+        self.email_provider = email_provider
+
+    async def send_reset_password_email(self, email: str, token: str):
+        reset_link = f"{settings.frontend_domain_name}/password-reset?token={token}"
         message = MessageSchema(
             subject="Sirius Account: Password Reset Request",
             recipients=[email],
             body=f"Click the link to reset your password: {reset_link}",
             subtype=MessageType.html,
         )
-        fm = FastMail(config)
-        await fm.send_message(message)
+        await self.email_provider.send_message(message)
 
-    @staticmethod
-    async def send_new_device_email(email: str, device_id: str) -> None:
-        config = ConnectionConfig(
-            MAIL_USERNAME="info.neomarketplace@gmail.com",
-            MAIL_PASSWORD="savt gkkk tjkk yuee",
-            MAIL_FROM="info.neomarketplace@gmail.com",
-            MAIL_SERVER='smtp.gmail.com',
-            MAIL_PORT=465,
-            MAIL_SSL_TLS=True,
-            MAIL_STARTTLS=False,
-        )
-        # Compose the email body
+    async def send_new_device_email(self, email: str, device_id: str) -> None:
         body = f"""
         <p>Hello,</p>
         <p>We detected a login to your Sirius.expert account from a new device:</p>
@@ -51,20 +48,9 @@ class EmailEngine:
             body=body,
             subtype=MessageType.html,
         )
-        fm = FastMail(config)
-        await fm.send_message(message)
+        await self.email_provider.send_message(message)
 
-    @staticmethod
-    async def send_login_otp_email(email: str, otp: str) -> None:
-        config = ConnectionConfig(
-            MAIL_USERNAME="info.neomarketplace@gmail.com",
-            MAIL_PASSWORD="savt gkkk tjkk yuee",
-            MAIL_FROM="info.neomarketplace@gmail.com",
-            MAIL_SERVER='smtp.gmail.com',
-            MAIL_PORT=465,
-            MAIL_SSL_TLS=True,
-            MAIL_STARTTLS=False,
-        )
+    async def send_login_otp_email(self, email: str, otp: str) -> None:
         body = f"""
         <p>Hello,</p>
         <p>Your one-time passcode (OTP) for logging into your Sirius.expert account is:</p>
@@ -79,5 +65,4 @@ class EmailEngine:
             body=body,
             subtype=MessageType.html,
         )
-        fm = FastMail(config)
-        await fm.send_message(message)
+        await self.email_provider.send_message(message)
