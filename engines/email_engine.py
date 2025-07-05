@@ -4,11 +4,11 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 class EmailProvider:
     def __init__(self):
         self.config = ConnectionConfig(
-            MAIL_USERNAME="info.neomarketplace@gmail.com",
-            MAIL_PASSWORD="savt gkkk tjkk yuee",
-            MAIL_FROM="info.neomarketplace@gmail.com",
-            MAIL_SERVER='smtp.gmail.com',
-            MAIL_PORT=465,
+            MAIL_USERNAME=settings.email_username,
+            MAIL_PASSWORD=settings.email_password,
+            MAIL_FROM=settings.email_from,
+            MAIL_SERVER=settings.email_server,
+            MAIL_PORT=settings.email_port,
             MAIL_SSL_TLS=True,
             MAIL_STARTTLS=False,
         )

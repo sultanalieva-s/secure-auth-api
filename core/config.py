@@ -50,6 +50,12 @@ class Settings(BaseSettings):
     # e.g: '["http://localhost", "http://localhost:4200", "http://local.dockertoolbox.tiangolo.com"]'
     backend_cors_origins: List[str] = ["*"]
 
+    email_username: str = 'test'
+    email_password: str = 'test'
+    email_from: str = 'test'
+    email_server: str = 'test'
+    email_port: int = 465
+
     @validator("backend_cors_origins", pre=True)
     def assemble_cors_origins(
         cls, v: Union[str, List[str]]
