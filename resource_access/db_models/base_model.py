@@ -4,11 +4,8 @@ from sqlalchemy.sql import expression
 
 
 class Base:
-
     id = Column(Integer, primary_key=True, index=True)
-    is_deleted = Column(
-        Boolean, default=False, server_default=expression.false()
-    )
+    is_deleted = Column(Boolean, default=False, server_default=expression.false())
     __mapper_args__ = {"eager_defaults": True}
 
 

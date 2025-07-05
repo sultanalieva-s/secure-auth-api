@@ -1,6 +1,7 @@
 from core.config import settings
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 
+
 class EmailProvider:
     def __init__(self):
         self.config = ConnectionConfig(
@@ -15,7 +16,6 @@ class EmailProvider:
 
     def get_provider(self):
         return FastMail(self.config)
-
 
 
 class EmailService:

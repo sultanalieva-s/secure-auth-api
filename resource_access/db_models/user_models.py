@@ -37,16 +37,13 @@ class UserDB(Base):
         nullable=True,
     )
     password_reset_tokens = relationship(
-        'UserPasswordResetTokenDB',
-        back_populates='user',
-        lazy='selectin',
+        "UserPasswordResetTokenDB",
+        back_populates="user",
+        lazy="selectin",
         uselist=True,
     )
     activity_logs = relationship(
-        "UserActivityStats",
-        back_populates="user",
-        lazy='selectin',
-        uselist=True
+        "UserActivityStats", back_populates="user", lazy="selectin", uselist=True
     )
 
 
@@ -66,11 +63,7 @@ class UserActivityStats(Base):
         server_default=func.now(),
         nullable=False,
     )
-    user = relationship(
-        "UserDB",
-        back_populates="activity_logs",
-        lazy = "selectin"
-    )
+    user = relationship("UserDB", back_populates="activity_logs", lazy="selectin")
 
 
 class UserPasswordResetTokenDB(Base):
@@ -97,4 +90,3 @@ class UserDeviceDB(Base):
         server_default=func.now(),
         nullable=False,
     )
-

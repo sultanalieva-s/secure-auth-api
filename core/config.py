@@ -18,8 +18,8 @@ class Settings(BaseSettings):
             raise ValueError(f"Incorrect environment value: {v}")
         return v
 
-    mysql_async_url: str = 'mysql+aiomysql://user:test123@mysql_db:3306/secure_auth_db'
-    mysql_url: str = 'mysql+pymysql://user:test123@mysql_db:3306/secure_auth_db'
+    mysql_async_url: str = "mysql+aiomysql://user:test123@mysql_db:3306/secure_auth_db"
+    mysql_url: str = "mysql+pymysql://user:test123@mysql_db:3306/secure_auth_db"
     SQLALCHEMY_DATABASE_URI: str = mysql_url
 
     base_dir: str = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,16 +50,14 @@ class Settings(BaseSettings):
     # e.g: '["http://localhost", "http://localhost:4200", "http://local.dockertoolbox.tiangolo.com"]'
     backend_cors_origins: List[str] = ["*"]
 
-    email_username: str = 'test'
-    email_password: str = 'test'
-    email_from: str = 'test'
-    email_server: str = 'test'
+    email_username: str = "test"
+    email_password: str = "test"
+    email_from: str = "test"
+    email_server: str = "test"
     email_port: int = 465
 
     @validator("backend_cors_origins", pre=True)
-    def assemble_cors_origins(
-        cls, v: Union[str, List[str]]
-    ) -> Union[List[str], str]:
+    def assemble_cors_origins(cls, v: Union[str, List[str]]) -> Union[List[str], str]:
         if isinstance(v, str) and not v.startswith("["):
             return [i.strip() for i in v.split(",")]
         elif isinstance(v, (list, str)):

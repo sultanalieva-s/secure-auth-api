@@ -24,9 +24,7 @@ sync_engine = create_engine(
     max_overflow=settings.db_sync_pool_size,
 )
 
-SessionLocal = sessionmaker(
-    bind=sync_engine, expire_on_commit=False, class_=Session
-)
+SessionLocal = sessionmaker(bind=sync_engine, expire_on_commit=False, class_=Session)
 
 
 async def get_async_session() -> AsyncGenerator[AsyncSession, None]:

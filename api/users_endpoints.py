@@ -7,13 +7,35 @@ from starlette.responses import JSONResponse
 
 from api.depends import get_session, get_current_user, get_current_admin
 from core.config import settings
-from schemas.user_schemas import UserSignUp, TokenSchema, UserSignIn, RefreshTokenRequest, \
-    PasswordResetRequestSchema, PasswordResetSchema, UserUpdateOut, UserUpdateIn, User, UserActivityStatsSchema, \
-    UserSignInOTP, UserActivityStatsPaginated
-from usecases.user_usecases import signup_usecase, signin_usecase, refresh_tokens_usecase, \
-    request_password_reset_usecase, reset_password_usecase, update_user_usecase, get_user_activity_logs_usecase, \
-    verify_otp_usecase
-from utils.exceptions import NotFoundException, AuthenticationError, AlreadyExistsException
+from schemas.user_schemas import (
+    UserSignUp,
+    TokenSchema,
+    UserSignIn,
+    RefreshTokenRequest,
+    PasswordResetRequestSchema,
+    PasswordResetSchema,
+    UserUpdateOut,
+    UserUpdateIn,
+    User,
+    UserActivityStatsSchema,
+    UserSignInOTP,
+    UserActivityStatsPaginated,
+)
+from usecases.user_usecases import (
+    signup_usecase,
+    signin_usecase,
+    refresh_tokens_usecase,
+    request_password_reset_usecase,
+    reset_password_usecase,
+    update_user_usecase,
+    get_user_activity_logs_usecase,
+    verify_otp_usecase,
+)
+from utils.exceptions import (
+    NotFoundException,
+    AuthenticationError,
+    AlreadyExistsException,
+)
 from jose import JWTError
 
 from utils.pagination import paginate
@@ -27,15 +49,19 @@ RATE_LIMIT_DEFAULT_SECONDS = settings.rate_limit_seconds
 
 
 @router.post(
-    '/auth/signup/',
+    "/auth/signup/",
     status_code=status.HTTP_200_OK,
-    description='User Registration',
+    description="User Registration",
     response_model=TokenSchema,
 )
 async def user_signup(
-        user_data: UserSignUp,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    user_data: UserSignUp,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         return await signup_usecase(
@@ -50,24 +76,31 @@ async def user_signup(
 
 
 @router.post(
-    '/auth/signin/',
+    "/auth/signin/",
     status_code=status.HTTP_200_OK,
-    description='User Signin',
+    description="User Signin",
     response_model=TokenSchema,
 )
 async def signin(
-        signin_data: UserSignIn,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    signin_data: UserSignIn,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         await signin_usecase(
             db_session,
             email=signin_data.email,
             password=signin_data.password,
-            device_id=signin_data.device_id
+            device_id=signin_data.device_id,
         )
-        return JSONResponse(content={"message": "OTP sent to your email"}, status_code=status.HTTP_200_OK)
+        return JSONResponse(
+            content={"message": "OTP sent to your email"},
+            status_code=status.HTTP_200_OK,
+        )
     except NotFoundException as e:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -81,21 +114,23 @@ async def signin(
 
 
 @router.post(
-    '/auth/verify-otp/',
+    "/auth/verify-otp/",
     status_code=status.HTTP_200_OK,
-    description='Verify User OTP and generate tokens',
+    description="Verify User OTP and generate tokens",
     response_model=TokenSchema,
 )
 async def verify_otp(
-        otp_data: UserSignInOTP,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    otp_data: UserSignInOTP,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         return await verify_otp_usecase(
-            db_session,
-            email=otp_data.email,
-            otp=otp_data.otp
+            db_session, email=otp_data.email, otp=otp_data.otp
         )
     except NotFoundException as e:
         return JSONResponse(
@@ -109,22 +144,23 @@ async def verify_otp(
         )
 
 
-@router.post(
-    "/auth/refresh-tokens",
-    response_model=TokenSchema
-)
+@router.post("/auth/refresh-tokens", response_model=TokenSchema)
 async def refresh_tokens(
-        request: RefreshTokenRequest,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    request: RefreshTokenRequest,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         return await refresh_tokens_usecase(db_session, request.refresh_token)
     except JWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'},
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
     except NotFoundException as e:
         return JSONResponse(
@@ -135,9 +171,13 @@ async def refresh_tokens(
 
 @router.post("/auth/password-reset/request")
 async def request_password_reset(
-        data: PasswordResetRequestSchema,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    data: PasswordResetRequestSchema,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         await request_password_reset_usecase(db_session, data.email)
@@ -151,9 +191,13 @@ async def request_password_reset(
 
 @router.post("/auth/password-reset/confirm")
 async def reset_password(
-        data: PasswordResetSchema,
-        db_session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    data: PasswordResetSchema,
+    db_session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     try:
         await reset_password_usecase(db_session, data.token, data.new_password)
@@ -172,10 +216,14 @@ async def reset_password(
     status_code=status.HTTP_200_OK,
 )
 async def update_user(
-        user_in: UserUpdateIn,
-        current_user: User = Depends(get_current_user),
-        session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    user_in: UserUpdateIn,
+    current_user: User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     new_user_data = User(**user_in.dict(exclude_unset=True))
     try:
@@ -205,12 +253,16 @@ async def update_user(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_activity(
-        current_admin: User = Depends(get_current_admin),
-        skip: NonNegativeInt = 0,
-        limit: NonNegativeInt = 10,
-        user_email: Optional[str] = None,
-        session: Session = Depends(get_session),
-        _=Depends(RateLimiter(times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS)),
+    current_admin: User = Depends(get_current_admin),
+    skip: NonNegativeInt = 0,
+    limit: NonNegativeInt = 10,
+    user_email: Optional[str] = None,
+    session: Session = Depends(get_session),
+    _=Depends(
+        RateLimiter(
+            times=RATE_LIMIT_DEFAULT_REQUESTS, seconds=RATE_LIMIT_DEFAULT_SECONDS
+        )
+    ),
 ):
     count, logs = await get_user_activity_logs_usecase(
         db_session=session,

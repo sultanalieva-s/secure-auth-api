@@ -36,7 +36,7 @@ async def get_refresh_token_data(
     token: str = Depends(httpbearer_schema),
 ) -> TokenPayload:
     try:
-        print(f'\n\n\n{token}\n\n\n')
+        print(f"\n\n\n{token}\n\n\n")
         payload = jwt.decode(
             token.credentials,
             settings.refresh_token_secret_key,
@@ -46,8 +46,8 @@ async def get_refresh_token_data(
     except (jwt.JWTError, ValidationError):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Could not validate credentials',
-            headers={'WWW-Authenticate': 'Bearer'},
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
         )
 
 
@@ -60,13 +60,13 @@ async def validate_refresh_token(
             user = await user_repo.get_user_by_id(token.sub)
         if user.is_deleted:
             raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN, detail='User is not active'
+                status_code=status.HTTP_403_FORBIDDEN, detail="User is not active"
             )
         return token
     except NotFoundException:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail='Could not validate credentials',
+            detail="Could not validate credentials",
         )
 
 
@@ -79,7 +79,7 @@ async def get_token_data(token: str = Depends(httpbearer_schema)) -> TokenPayloa
         )
         return TokenPayload(**payload)
     except jwt.JWTError as e:
-        print(f'\n\n\n{e}\n\n\n')
+        print(f"\n\n\n{e}\n\n\n")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
@@ -111,5 +111,5 @@ async def get_current_admin(
 
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail='Permission Denied',
+        detail="Permission Denied",
     )

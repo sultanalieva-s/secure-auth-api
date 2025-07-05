@@ -40,9 +40,7 @@ def exclude_tables_from_config(config_):
     return tables
 
 
-exclude_tables = exclude_tables_from_config(
-    config.get_section("alembic:exclude")
-)
+exclude_tables = exclude_tables_from_config(config.get_section("alembic:exclude"))
 
 
 def include_object(object, name, type_, reflected, compare_to):

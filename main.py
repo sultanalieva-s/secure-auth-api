@@ -9,6 +9,7 @@ from fastapi_limiter import FastAPILimiter
 from prometheus_fastapi_instrumentator import Instrumentator
 
 from api.api import router
+
 config = dotenv_values(".env")
 
 REDIS_URL = "redis://redis-secure-auth:6379"

@@ -8,9 +8,7 @@ ALGORITHM = "HS256"
 
 
 def create_access_token(user_id: int, device_id: str = None) -> str:
-    expire = datetime.now(UTC) + timedelta(
-        minutes=settings.access_token_expire_minutes
-    )
+    expire = datetime.now(UTC) + timedelta(minutes=settings.access_token_expire_minutes)
     to_encode = {"exp": expire, "sub": str(user_id)}
     if device_id:
         to_encode["dev"] = device_id
