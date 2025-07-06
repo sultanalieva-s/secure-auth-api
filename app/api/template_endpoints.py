@@ -3,7 +3,7 @@ from typing import Union
 from fastapi import FastAPI, APIRouter, Depends
 from sqlalchemy.orm import Session
 
-from api.depends import get_session
+from app.api.depends import get_session
 
 app = FastAPI()
 

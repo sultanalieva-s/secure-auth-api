@@ -7,7 +7,7 @@ from fastapi import FastAPI, Request, Response, status, HTTPException
 from dotenv import dotenv_values
 from fastapi_limiter import FastAPILimiter
 
-from api.api import router
+from app.api.api import router
 
 config = dotenv_values(".env")
 

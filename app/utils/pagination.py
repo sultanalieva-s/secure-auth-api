@@ -1,6 +1,6 @@
 from typing import Any, List
 
-from schemas.pagination_schemas import PaginatedResponse
+from app.schemas.pagination_schemas import PaginatedResponse
 
 
 def paginate(count: int, items: List[Any]):

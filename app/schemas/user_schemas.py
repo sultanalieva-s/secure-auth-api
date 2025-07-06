@@ -3,8 +3,8 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 
-from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
-from schemas.pagination_schemas import PaginatedResponse
+from app.schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
+from app.schemas.pagination_schemas import PaginatedResponse
 
 
 class User(BaseModel):

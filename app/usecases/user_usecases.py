@@ -6,19 +6,19 @@ from typing import Dict, List, Tuple
 import pytz
 from sqlalchemy.orm import Session
 
-from core import jwt_tokens
-from core.config import settings
-from core.jwt_tokens import create_access_token, create_refresh_token
-from engines.auth_engine import AuthenticationEngine
-from engines.email_engine import EmailService
-from resource_access import db_session
-from resource_access.repositories.user_repos import (
+from app.core import jwt_tokens
+from app.core.config import settings
+from app.core.jwt_tokens import create_access_token, create_refresh_token
+from app.engines.auth_engine import AuthenticationEngine
+from app.engines.email_engine import EmailService
+from app.resource_access import db_session
+from app.resource_access.repositories.user_repos import (
     UserRepository,
     UserActivityStatsRepository,
     UserDeviceRepository,
 )
-from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
-from schemas.user_schemas import (
+from app.schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
+from app.schemas.user_schemas import (
     UserSignUp,
     User,
     UserUpdate,
@@ -30,7 +30,7 @@ from schemas.user_schemas import (
 from jose import jwt
 import secrets
 
-from utils.exceptions import (
+from app.utils.exceptions import (
     AlreadyExistsException,
     AuthenticationError,
     NotFoundException,

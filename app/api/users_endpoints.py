@@ -5,9 +5,9 @@ from sqlalchemy.orm import Session
 from starlette import status
 from starlette.responses import JSONResponse
 
-from api.depends import get_session, get_current_user, get_current_admin
-from core.config import settings
-from schemas.user_schemas import (
+from app.api.depends import get_session, get_current_user, get_current_admin
+from app.core.config import settings
+from app.schemas.user_schemas import (
     UserSignUp,
     TokenSchema,
     UserSignIn,
@@ -21,7 +21,7 @@ from schemas.user_schemas import (
     UserSignInOTP,
     UserActivityStatsPaginated,
 )
-from usecases.user_usecases import (
+from app.usecases.user_usecases import (
     signup_usecase,
     signin_usecase,
     refresh_tokens_usecase,
@@ -31,18 +31,19 @@ from usecases.user_usecases import (
     get_user_activity_logs_usecase,
     verify_otp_usecase,
 )
-from utils.exceptions import (
+from app.utils.exceptions import (
     NotFoundException,
     AuthenticationError,
     AlreadyExistsException,
 )
-from jose import JWTError
+from app.utils.pagination import paginate
 
-from utils.pagination import paginate
+from jose import JWTError
+from fastapi_limiter.depends import RateLimiter
+
 
 router = APIRouter()
 
-from fastapi_limiter.depends import RateLimiter
 
 RATE_LIMIT_DEFAULT_REQUESTS = settings.rate_limit_requests
 RATE_LIMIT_DEFAULT_SECONDS = settings.rate_limit_seconds

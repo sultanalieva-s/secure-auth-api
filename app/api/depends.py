@@ -1,4 +1,3 @@
-from resource_access.repositories.user_repos import UserRepository
 from fastapi import (
     Depends,
     HTTPException,
@@ -9,14 +8,16 @@ from jose import jwt
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
-from core.config import settings
-from schemas.enums.user_enums import UserRoleEnum
+from app.core.config import settings
+from app.schemas.enums.user_enums import UserRoleEnum
+from app.resource_access.repositories.user_repos import UserRepository
 
-from schemas.user_schemas import TokenPayload, User
-from resource_access.db_session import AsyncSessionLocal
 
-from core import jwt_tokens
-from utils.exceptions import NotFoundException
+from app.schemas.user_schemas import TokenPayload, User
+from app.resource_access.db_session import AsyncSessionLocal
+
+from app.core import jwt_tokens
+from app.utils.exceptions import NotFoundException
 
 httpbearer_schema = HTTPBearer()
 

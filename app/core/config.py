@@ -4,7 +4,7 @@ from typing import List, Optional, Union
 from pydantic import validator
 from pydantic_settings import BaseSettings
 
-from core.constants.environment_constants import DEV, PROD, STAGING
+from app.core.constants.environment_constants import DEV, PROD, STAGING
 
 
 class Settings(BaseSettings):

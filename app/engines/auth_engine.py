@@ -1,10 +1,10 @@
 import random
 import string
 
-from schemas.user_schemas import User
+from app.schemas.user_schemas import User
 from passlib.context import CryptContext
 
-from utils.exceptions import AuthenticationError
+from app.utils.exceptions import AuthenticationError
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, UTC
 
 from jose import jwt
 
-from core.config import settings
+from app.core.config import settings
 
 ALGORITHM = "HS256"
 

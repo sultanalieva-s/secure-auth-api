@@ -8,19 +8,19 @@ from sqlalchemy import select, update, exists, and_
 from sqlalchemy.orm import Session
 from sqlalchemy.sql.functions import count
 
-from resource_access.db_models.user_models import (
+from app.resource_access.db_models.user_models import (
     UserDB,
     UserPasswordResetTokenDB,
     UserActivityStats,
     UserDeviceDB,
 )
-from schemas.user_schemas import (
+from app.schemas.user_schemas import (
     User,
     UserPasswordResetToken,
     UserActivityStatsSchema,
     UserDevice,
 )
-from utils.exceptions import NotFoundException, AlreadyExistsException
+from app.utils.exceptions import NotFoundException, AlreadyExistsException
 
 logger = logging.getLogger(__name__)
 

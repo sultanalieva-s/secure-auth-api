@@ -11,8 +11,8 @@ from sqlalchemy import (
 from sqlalchemy.dialects.mysql import TIMESTAMP, ENUM
 from sqlalchemy.orm import relationship
 
-from resource_access.db_models.base_model import Base
-from schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
+from app.resource_access.db_models.base_model import Base
+from app.schemas.enums.user_enums import UserRoleEnum, UserActivityTypeEnum
 import pytz
 
 
