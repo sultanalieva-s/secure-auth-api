@@ -271,3 +271,8 @@ async def get_user_activity(
         limit=limit,
     )
     return paginate(count=count, items=logs)
+
+
+@router.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0

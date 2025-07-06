@@ -22,7 +22,7 @@ services:
       MYSQL_ASYNC_URL: mysql+aiomysql://user:test123@mysql_db:3306/secure_auth_db
       MYSQL_HOST: mysql_db
       MYSQL_PORT: 3306
-      GUNICORN_WORKERS: 2
+      GUNICORN_WORKERS: 4
     depends_on:
       - mysql_db
     ports:
@@ -31,26 +31,6 @@ services:
     - ./alembic/versions:/app/alembic/versions
     - ./static:/app/static
     - ./media:/app/media
-
-  redis-secure-auth:
-    container_name: redis-secure-auth
-    image: redis:latest
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-
-  prometheus:
-    image: prom/prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ${PWD}/prometheus.yml:/etc/prometheus/prometheus.yml
-
-  grafana:
-    hostname: grafana
-    image: grafana/grafana
-    ports:
-      - "3000:3000"
 
 volumes:
   db_data:

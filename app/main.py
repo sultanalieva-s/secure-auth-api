@@ -6,7 +6,6 @@ from fastapi import FastAPI, Request, Response, status, HTTPException
 
 from dotenv import dotenv_values
 from fastapi_limiter import FastAPILimiter
-from prometheus_fastapi_instrumentator import Instrumentator
 
 from api.api import router
 
@@ -50,19 +49,5 @@ async def lifespan(_: FastAPI):
 
 
 app = FastAPI(title="Secure Authentication Api", lifespan=lifespan)
-
-instrumentator = Instrumentator()
-instrumentator.instrument(app).expose(app)
-
-
-def ignore_handler(payload, **kw):  # kw is currently unused
-    try:
-        exception = payload["data"]["body"]["trace"]["exception"]["class"]
-        if exception in ["RequestValidationError", "HTTPException"]:
-            return False
-    except KeyError:
-        return payload
-    return payload
-
 
 app.include_router(router)
